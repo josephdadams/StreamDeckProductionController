@@ -94,8 +94,8 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
         }
     ]
 }
-              </pre><br /><br />
-              <b>Field Descriptions:</b>
+</pre><br /><br />
+<b>Field Descriptions:</b>
               <ul>
                   <li><i>deviceID</i>: A unique identifier so that this device can be located. Referenced in button structure.<br /><br /></li>
                   <li><i>deviceName</i>: A helpful name for the device, used in notifications and other areas.<br /><br /></li>
