@@ -1,6 +1,8 @@
 # StreamDeckProductionController
 Node JS Implementation using Elgato Stream Deck as production controller. Buttons can be configured to send multiple actions to various protocols like RossTalk, OSC, VideoHub, HTTP requests, etc.
 
+To get started, you will need a buttons.JSON file (for button structure) and a devices.JSON file (for device structure). They are both required, even if you don't have any external devices.
+
 <b>Field Descriptions:</b>
               <ul>
                   <li><i>buttonNumber</i>: The zero-based key index where the button should fall on the physical device. 0 is top right, flowing to the left in rows.</li>
@@ -65,6 +67,7 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
               </ul>
 
 <b>Device Structure:</b><br /><br />
+A devices.json (any filename is ok as long as it is a separate file from your button structure) should be created to house information for any of your production devices that you will refer to often in your button structure. It will keep you from having to repeat host, port, triggerTypes, etc.
               
 <i>Sample Device Structure</i><br/>
 <pre>
