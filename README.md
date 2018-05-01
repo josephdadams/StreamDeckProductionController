@@ -19,14 +19,14 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
                   <li><i>backButton</i> true or false. If true, the button will act as a "back" button and go up a level in the folder structure. No triggers or commands can be run on a back button.</li>
               </ul>
               
-              <b>Button States:</b>
+<b>Button States:</b>
               Any button can have multiple button states defined by using the <i>buttonStates</i> array property.
               <ul>
                   <li><i>buttonStateID</i>: The identifier of the button state. Does not have to be globally unique, just unique to that button.</li>
                   <li><i>buttonImage</i>: The file path of the button image that should be loaded when this button state is requested.</li>
               </ul>
               
-              <b>Trigger Types:</b><br />
+<b>Trigger Types:</b><br />
               Several trigger types are available. These define what action the button will take when pressed. The <i>triggerType</i> specifies the type of action, and <i>trigger</i> specifies the message, command, etc.
               <ul>
                   <li><i>LoadButtonContent</i>: Jump from the current folder of buttons to the buttonID defined in <i>trigger</i>.</li>
@@ -53,7 +53,7 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
                   <li><i>Notify</i>: Sends a notification to the screen. Use the <i>notify</i> property of the trigger object itself to override global notification preferences if needed. The message in <i>trigger</i> is what will be sent.</li>
               </ul>
               
-              <b>Trigger Arrays:</b><br />
+<b>Trigger Arrays:</b><br />
               Any button can have multiple trigger types assigned by using the <i>triggers</i> array property.
               <ul>
                   <li><i>deviceID</i>: If listed, this will override any deviceID declared in the button property itself.</li>
@@ -64,10 +64,10 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
                   <li><i>notify</i>: Used to override global preferences from Settings. If <i>on</i>, this trigger will always show a notification. If <i>off</i>, it will never show one.</li>
               </ul>
 
-              <b>Device Structure:</b><br /><br />
+<b>Device Structure:</b><br /><br />
               
-              <i>Sample Device Structure</i><br/>
-              <pre>
+<i>Sample Device Structure</i><br/>
+<pre>
 {
     "devices":
     [
@@ -104,8 +104,8 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
                   <li><i>triggerType</i>: The default trigger type associated with this device. See examples.</li>
               </ul>
               
-              <b>Available/Applicable Trigger Types for Devices:</b>
-              <ul>
+<b>Available/Applicable Trigger Types for Devices:</b>
+<ul>
                   <li><i>DashboardWebCall</i>: For making calls to a Ross Dashboard Custom Panel that has its HTTP Trigger Port assigned, to activate a button on that panel with a GPI assigned.<br />
                       Example call: <i>http://ipaddress:port/ajax/GPI</i><br /><br /></li>
                   <li><i>RossTalk</i>: For sending RossTalk commands to the specified device. Assumes port 7788 if left undefined.<br /><br /></li>
@@ -115,7 +115,7 @@ Node JS Implementation using Elgato Stream Deck as production controller. Button
                   <li><i>URL</i>: For sending URL requests to the specified host and port. Assumes port 80 if left undefined.</li>
               </ul>
 
-              <b>Making TCP Changes to the StreamDeck:</b><br /><br />
+<b>Making TCP Changes to the StreamDeck:</b><br /><br />
               By default, the software is set up to accept the following commands:
               <ul>
                   <li>Command: <i>TOGGLE buttonID on</i> or <i>TOGGLE buttonID off</i><br />
