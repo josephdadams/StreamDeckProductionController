@@ -1,0 +1,36 @@
+{
+    "name": "streamdeck-productioncontroller",
+    "productName": "Stream Deck Production Controller",
+    "description": "Software to control Stream Deck, utilizing various web and network protocols.",
+    "version": "1.5.0",
+    "keywords": [
+        "util",
+        "functional",
+        "server",
+        "client",
+        "browser",
+        "rosstalk",
+        "osc",
+        "stream-deck",
+        "streamdeck",
+        "elgato",
+        "stream deck"
+    ],
+    "license": "MIT",
+    "author": "Joseph Adams",
+    "dependencies": {
+        "elgato-stream-deck": "2.1.1",
+        "electron-notify": "^0.1.0",
+        "osc": "2.2.1"
+    },
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=fixtures/icons/mac/icon.icns --prune=true --out=release-builds",
+        "package-win": "electron-packager . streamdeck-productioncontroller --overwrite --asar=true --platform=win32 --arch=ia32 --icon=fixtures/icons/win/icon.ico --prune=true --out=release-builds --version-string.CompanyName=JA --version-string.FileDescription=JA --version-string.ProductName=\"Stream Deck Production Controller\"",
+        "package-linux": "electron-packager . streamdeck-productioncontroller --overwrite --asar=true --platform=linux --arch=x64 --icon=fixtures/icons/png/1024x1024.png --prune=true --out=release-builds"
+    },
+    "devDependencies": {
+        "electron": "^1.8.4"
+    }
+}

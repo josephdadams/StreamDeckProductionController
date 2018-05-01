@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Stream Deck Production Control</title>
+      <link rel="stylesheet" href="css/checkbox.css">
+      <style>
+          body {
+              background-color: #eeeeee;
+              padding: 5px;
+          }
+#title-bar {
+ -webkit-app-region: drag;
+ height: 35px; 
+ padding: none;
+ margin: 0px; 
+}
+
+#title {
+ position: fixed;
+ top: 0px;
+ left: 6px; 
+}
+
+#title-bar-btns {
+ -webkit-app-region: no-drag;
+ position: fixed;
+ top: 0px;
+ right: 6px;
+}          
+      </style>
+    </head>
+ <script>
+const ipc = require('electron').ipcRenderer;
+
+const remote = require('electron').remote;
+
+var btnOpenFileDialog_ButtonStructure;
+var btnOpenFileDialog_DeviceStructure;
+
+var btnRestartStreamDeck;
+
+var chkTCPListener, btnUpdateTCPListenPort, inputTCPListenPort;
+    
+function onLoad()
+{
+        document.getElementById("btnClose").addEventListener("click", function (e) {
+               var window = remote.getCurrentWindow();
+               window.close();
+          }); 
+    
+    btnOpenFileDialog_ButtonStructure = document.getElementById('btnOpenFileDialog_ButtonStructure');
+    btnOpenFileDialog_DeviceStructure = document.getElementById('btnOpenFileDialog_DeviceStructure');
+    
+    btnRestartStreamDeck = document.getElementById('btnRestartStreamDeck');
+    btnRestartStreamDeck.style.display = "none";
+       
+    btnOpenFileDialog_ButtonStructure.addEventListener('click', function (event) {ipc.send('FileDialogOpen-ButtonStructure');});
+    btnOpenFileDialog_DeviceStructure.addEventListener('click', function (event) {ipc.send('FileDialogOpen-DeviceStructure');});
+    
+    chkTCPListener = document.getElementById('chkTCPListener');    
+    chkTCPListener.addEventListener('click', function (event) {
+        ipc.send('UpdateStore-TCPListener', chkTCPListener.checked);
+        if (chkTCPListener.checked)
+        {
+            document.getElementById('divTCPListenPortSettings').style.display = "none";
+        }
+        else
+        {
+            document.getElementById('divTCPListenPortSettings').style.display = "block";            
+        }
+    });
+    
+    btnUpdateTCPListenPort = document.getElementById('btnUpdateTCPListenPort');
+    inputTCPListenPort = document.getElementById('inputTCPListenPort');
+    btnUpdateTCPListenPort.addEventListener('click', function (event) {
+        if (inputTCPListenPort.value !== "")
+        {
+            if ((inputTCPListenPort.value > 1023) && (inputTCPListenPort.value < 65536))
+            {
+                ipc.send('UpdateStore-TCPListenPort', inputTCPListenPort.value);
+            }
+        }
+    });
+    
+    chkNotifications.addEventListener('click', function (event) {ipc.send('UpdateStore-Notifications', chkNotifications.checked);});
+    
+    btnRestartStreamDeck.addEventListener('click', function (event) {
+        ipc.send("StreamDeck-Restart");
+        btnRestartStreamDeck.style.display = "none";
+    });
+
+    ipc.on('FileSelected-ButtonStructure', function (event, path) {
+        if (path!=="")
+        {
+            document.getElementById('spanFileSelected_ButtonStructure').innerHTML = path;
+        }
+        else
+        {
+            document.getElementById('spanFileSelected_ButtonStructure').innerHTML = "Please Select a File.";
+        }
+    });
+    
+    ipc.on('FileSelected-DeviceStructure', function (event, path) {
+        if (path!=="")
+        {
+            document.getElementById('spanFileSelected_DeviceStructure').innerHTML = path;
+        }
+        else
+        {
+            document.getElementById('spanFileSelected_DeviceStructure').innerHTML = "Please Select a File.";
+        }
+    });
+    
+    ipc.on('TCPListener-Status', function (event, status) {
+        if (status)
+        {
+            document.getElementById('chkTCPListener').checked = true;
+            document.getElementById('divTCPListenPortSettings').style.display = "none";
+        }
+        else
+        {
+            document.getElementById('chkTCPListener').checked = false;
+            document.getElementById('divTCPListenPortSettings').style.display = "block";            
+        }
+    });
+    
+    ipc.on('TCPListenPort-Status', function (event, port) {
+        document.getElementById('inputTCPListenPort').value = port;
+        console.log(port);
+    });
+    
+    ipc.on('Notifications-Status', function (event, status) {
+        if (status)
+        {
+            document.getElementById('chkNotifications').checked = true;   
+        }
+        else
+        {
+            document.getElementById('chkNotifications').checked = false;
+        }
+    });
+    
+    ipc.on("StreamDeck-OfferRestart", function (event, msg) {
+        switch (msg)
+        {
+            case "NewButtonFile":
+                btnRestartStreamDeck.style.display = "block";
+                break;
+            case "NewDeviceFile":
+                btnRestartStreamDeck.style.display = "block";
+                break;
+            default:
+                break;
+        }
+    });
+
+    ipc.send('LoadStore-ButtonStructureFile');
+    ipc.send('LoadStore-DeviceStructureFile');
+    ipc.send('LoadStore-TCPListener');
+    ipc.send('LoadStore-TCPListenPort');
+    ipc.send('LoadStore-Notifications');
+}
+    </script>
+<body onLoad="onLoad();">
+ <div id="title-bar">
+     <div id="title">Settings</div>
+      <div id="title-bar-btns">
+           <button id="btnClose">x</button>
+      </div>
+ </div>
+    <div>
+        <input type="checkbox" checked id="chkTCPListener">
+        <label for="chkTCPListener">TCP Listener Service</label>
+        <input type="checkbox" checked id="chkNotifications">
+        <label for="chkNotifications">Notifications</label>
+        <br /><br />
+        <div style="clear:left;display:none;" id="divTCPListenPortSettings">
+            <input type="text" id="inputTCPListenPort" size="5" />
+            <button id="btnUpdateTCPListenPort">Update Port</button>
+        </div>
+    </div>
+    <div>
+        <div style="clear:left;"><b>Button/Device Settings</b><br /></div>
+        <div style="clear:left;">
+            <label for="btnOpenFileDialog_ButtonStructure">Button Structure File</label><br />
+            <span style="font-size:10px;" id="spanFileSelected_ButtonStructure"></span>
+            <button id="btnOpenFileDialog_ButtonStructure">Browse...</button><br /><br />
+        </div>
+        <div style="clear:left;">
+            <label for="btnOpenFileDialog_DeviceStructure">Device Structure File</label><br />
+            <span style="font-size:10px;" id="spanFileSelected_DeviceStructure"></span>
+            <button id="btnOpenFileDialog_DeviceStructure">Browse...</button><br /><br />
+        </div>
+        <div style="clear:left;"><button id="btnRestartStreamDeck">Restart Stream Deck with new Files</button></div>
+    </div>
+</body>
+  </html>

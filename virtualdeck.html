@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Stream Deck Production Controller - Virtual Deck</title>
+            <link rel="stylesheet" href="css/checkbox.css">
+          <style>
+              body
+              {
+                background-color: #222222;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+              }
+              
+              .virtualdeck_container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+              }
+              
+              .virtualdeck_childcontainer {
+                    width: 410px;
+                    height: 200px;
+
+                    top: 50%;
+                    left: 50%;
+              }
+              
+              .virtualdeck_titlediv {
+                  width: 380px;
+                  height: 25px;
+                  padding: 5px;
+                  
+                  text-align:center;
+                  font-size:20px;
+                  font-family: "Arial", sans-serif;
+                  color:white;
+              }
+              
+              .virtualdeck_followstatediv {
+                  font-size:10px;
+                  font-family: "Arial", sans-serif;
+                  color:white;
+              }
+              
+              .virtualdeck_followstatechk {
+                  height: 1em;
+              }
+              
+              .virtualdeck_div {
+                  width: 72px;
+                  height: 72px;
+                  padding: 5px;
+                  float:left;
+              }
+              
+              .virtualdeck_image {
+                  border-radius: 15px;
+              }
+              
+                
+              @keyframes blink { 
+                50% { border-color: #ffcc00; } 
+              }
+             .virtualdeck_image_border {
+                border-radius: 15px;
+                animation-name: blink ;
+                animation-duration: .5s ;
+                animation-timing-function: step-end ;
+                animation-iteration-count: 5 ;
+                animation-direction: alternate ;
+            }
+              
+#title-bar {
+ -webkit-app-region: drag;
+ height: 10px; 
+ padding: none;
+ margin: 0px; 
+}
+
+#title {
+ position: fixed;
+ top: 0px;
+ left: 6px; 
+}
+
+#title-bar-btns {
+ -webkit-app-region: no-drag;
+ position: fixed;
+ top: 0px;
+ right: 6px;
+}
+          </style>
+<script>
+const ipc = require('electron').ipcRenderer;
+
+const remote = require('electron').remote;
+
+var divKey0, divKey1, divKey2, divKey3, divKey4, divKey5, divKey6, divKey7, divKey8, divKey9, divKey10, divKey11, divKey12, divKey13, divKey14;
+
+var streamDeckRunning = false;
+
+var followPhysicalDeck = true;
+
+var jsonButtonContent = {};
+var currentButtonContent = {};
+var parentButtonContent = {};
+var StreamDeck_currentButtonContent = {};
+
+var firstLoad = true;
+
+var chkFollowState;
+
+function onLoad()
+{
+    document.getElementById("btnClose").addEventListener("click", function (e) {
+               var window = remote.getCurrentWindow();
+               window.close();
+          }); 
+          
+    var chkFollowState = document.getElementById('chkFollowState')
+    chkFollowState.addEventListener('click', function (event) {
+        followPhysicalDeck = chkFollowState.checked;
+        ipc.send('UpdateStore-VirtualDeckFollowState', chkFollowState.checked);
+        VirtualDeck_UpdateDeck();
+    });
+    
+    divKey0 = document.getElementById('divKey0');
+    divKey1 = document.getElementById('divKey1');
+    divKey2 = document.getElementById('divKey2');
+    divKey3 = document.getElementById('divKey3');
+    divKey4 = document.getElementById('divKey4');
+    divKey5 = document.getElementById('divKey5');
+    divKey6 = document.getElementById('divKey6');
+    divKey7 = document.getElementById('divKey7');
+    divKey8 = document.getElementById('divKey8');
+    divKey9 = document.getElementById('divKey9');
+    divKey10 = document.getElementById('divKey10');
+    divKey11 = document.getElementById('divKey11');
+    divKey12 = document.getElementById('divKey12');
+    divKey13 = document.getElementById('divKey13');
+    divKey14 = document.getElementById('divKey14');
+    
+    divKey0.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(0);
+    });
+    divKey1.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(1);
+    });
+    divKey2.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(2);
+    });
+    divKey3.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(3);
+    });
+    divKey4.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(4);
+    });
+    divKey5.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(5);
+    });
+    divKey6.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(6);
+    });
+    divKey7.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(7);
+    });
+    divKey8.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(8);
+    });
+    divKey9.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(9);
+    });
+    divKey10.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(10);
+    });
+    divKey11.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(11);
+    });
+    divKey12.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(12);
+    });
+    divKey13.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(13);
+    });
+    divKey14.addEventListener('click', function (e) {
+        VirtualDeck_keyPressDown(14);
+    });
+    
+    ipc.on('CurrentButtonContent', function (event, buttonContent, blStreamDeckRunning) {        
+        streamDeckRunning = blStreamDeckRunning;
+        StreamDeck_currentButtonContent = buttonContent;
+        
+        if (followPhysicalDeck)
+        {
+            currentButtonContent = buttonContent;
+            
+            if (!streamDeckRunning)
+            {
+                followPhysicalDeck = false;
+                chkFollowState.checked = false;
+            }
+        }
+        
+        VirtualDeck_fillKeys(currentButtonContent);
+    });
+    
+    ipc.on('JsonButtonContent', function (event, buttonContent) {
+        jsonButtonContent = buttonContent;
+        if (firstLoad)
+        {
+            parentButtonContent = jsonButtonContent;
+            currentButtonContent = jsonButtonContent;
+            VirtualDeck_fillKeys(currentButtonContent);
+            ipc.send("LoadStore-DeckLocked");
+            firstLoad = false;
+        }
+        else
+        {
+            if (!followPhysicalDeck)
+            {
+                VirtualDeck_redrawCurrentFromMaster();
+            }
+        }
+    });
+    
+    ipc.on('DeckLocked', function (event, status) {
+       if (status === true)
+       {
+           VirtualDeck_lockDeck();
+       }
+       else
+       {
+           VirtualDeck_unlockDeck();
+       }
+    });
+    
+        ipc.on('VirtualDeck-FollowState', function (event, status) {
+            if (status)
+            {
+                document.getElementById('chkFollowState').checked = true;
+                followPhysicalDeck = true;
+            }
+            else
+            {
+                document.getElementById('chkFollowState').checked = false;
+                followPhysicalDeck = false;
+            }
+        });
+    
+    ipc.on('VirtualDeck-KeyPressDown', function (event, keyIndex) {
+        //VirtualDeck_UpdateKeyPress(keyIndex);
+        // quickly highlights the virtual button that was pressed if it's a button currently visible and matches what was pressed on the phyiscal deck
+    });    
+    
+    ipc.send('LoadStore-JsonButtonContent');
+    ipc.send('LoadStore-CurrentButtonContent');
+    ipc.send('LoadStore-VirtualDeckFollowState');
+}
+
+function VirtualDeck_UpdateDeck()
+{
+    // code here to redraw current screen based on updated jsonButtonContent
+    if (followPhysicalDeck)
+    {
+        currentButtonContent = StreamDeck_currentButtonContent;
+    }
+    
+    VirtualDeck_fillKeys(currentButtonContent);
+}
+
+function VirtualDeck_findButtonByButtonNumber(buttonNumber)
+{
+    var found = false;
+    var buttonObj = {};
+    
+    for (var i = 0; i < currentButtonContent.buttons.length; i++)
+    {
+        if (currentButtonContent.buttons[i].buttonNumber === buttonNumber)
+        {
+            found = true;
+            buttonObj = currentButtonContent.buttons[i];
+        }
+    }
+    
+    if (!found)
+    {
+        buttonObj = null;
+    }
+    
+    return buttonObj;
+}
+
+function VirtualDeck_redrawCurrentFromMaster()
+{
+    // search master up to date jsonButtonContent for the virtual deck's currentbuttoncontent, and redraw the deck based on that
+    var buttonID = currentButtonContent.buttons[0].id;
+    VirtualDeck_findButtonContent(jsonButtonContent, buttonID);
+    VirtualDeck_fillKeys(currentButtonContent);
+}
+
+function VirtualDeck_findButtonContent(buttonContent, buttonID)
+{   
+    for (var i = 0; i < buttonContent.buttons.length; i++)
+    {
+        if (buttonContent.buttons[i].id === buttonID)
+        {
+            currentButtonContent = buttonContent;
+        }
+        else if (buttonContent.buttons[i].buttons)
+        {
+            VirtualDeck_findButtonContent(buttonContent.buttons[i], buttonID);
+        }
+    }
+}
+
+function VirtualDeck_getButtonParent(buttonContent, buttonID)
+{
+    parentButtonContent = null;
+    
+    for (var i = 0; i < buttonContent.buttons.length; i++)
+    {
+        if (buttonContent.buttons[i].id === buttonID)
+        {
+            parentButtonContent = buttonContent;
+        }
+        else if (buttonContent.buttons[i].buttons)
+        {
+            VirtualDeck_getButtonParent(buttonContent.buttons[i], buttonID);
+        }
+    }
+    
+    if (parentButtonContent === null)
+    {
+        parentButtonContent = jsonButtonContent;
+    }
+}
+
+function VirtualDeck_keyPressDown(keyIndex)
+{
+    if ((streamDeckRunning)&&(followPhysicalDeck))
+    {
+        ipc.send('StreamDeck-KeyPressDown', keyIndex);
+    }
+    else
+    {
+        // code here to make it act separately from physical deck
+        // find the button object in the global jsonButtonContent object and send that button obj to the fire trigger command in the main process
+        //ipc.send('StreamDeck-KeyPressDown', keyIndex);
+        
+        var buttonObj = VirtualDeck_findButtonByButtonNumber(keyIndex);
+    
+        if (buttonObj !== null)
+        {   
+            VirtualDeck_getButtonParent(jsonButtonContent, buttonObj.id);
+            VirtualDeck_getButtonParent(jsonButtonContent, parentButtonContent.id);
+
+            if (buttonObj.backButton) // if this was a back button, go up a folder
+            {
+                if (parentButtonContent === null) // if we are at the top level already
+                {
+                    // add code to go to a logo or something
+                }
+                else // load the parent level
+                {
+                    VirtualDeck_fillKeys(parentButtonContent);
+                }
+            }
+            else // if not a "back" button, check if it's a folder
+            {       
+                if (buttonObj.buttons) // if this is a folder with items in it
+                {
+                    VirtualDeck_fillKeys(buttonObj);
+                }
+                else // not a folder, so just run the trigger
+                {
+                    VirtualDeck_fireButtonCommand(buttonObj);
+                    VirtualDeck_UpdateKeyPress(keyIndex);
+                }
+            }        
+        }
+    }
+}
+
+function VirtualDeck_fillKeys(buttonContent)
+{
+        //loop through returned Button Obj to build virtual deck
+        VirtualDeck_ClearKeys();
+        
+        for (var i=0; i < buttonContent.buttons.length; i++)
+        {
+            if (buttonContent.buttons[i].buttonStates) // if the button supports multiple states, load the current state of the button
+            {
+                var buttonImage = buttonContent.buttons[i].buttonStates[0].buttonImage; // load the first button state if currentButtonStateID is not valid
+
+                if (buttonContent.buttons[i].currentButtonStateID)
+                {                
+                    for (var j=0; j < buttonContent.buttons[i].buttonStates.length; j++)
+                    {
+                        if (buttonContent.buttons[i].buttonStates[j].buttonStateID===buttonContent.buttons[i].currentButtonStateID)
+                        {
+                            buttonImage = buttonContent.buttons[i].buttonStates[j].buttonImage;
+                        }
+                    }
+                }
+                VirtualDeck_CreateButton(buttonContent.buttons[i].buttonNumber, buttonContent.buttons[i].name, buttonImage);
+            }
+            else // load using the regular image property
+            {
+                VirtualDeck_CreateButton(buttonContent.buttons[i].buttonNumber, buttonContent.buttons[i].name, buttonContent.buttons[i].image);
+            }
+        }
+        
+        currentButtonContent = buttonContent;
+}
+
+function VirtualDeck_fireButtonCommand(buttonObj)
+{
+    //ipc to send to main process with button obj
+    ipc.send('VirtualDeck-FireButtonCommand', buttonObj);
+}
+
+function VirtualDeck_UpdateKeyPress(keyIndex)
+{
+    // temporarily adds a border around the button that was pressed on either the virtual deck or the physical deck
+    
+    var img = null;
+    
+    switch (keyIndex)
+    {
+        case 0:
+            img = divKey0.getElementsByTagName("img")[0];
+            break;
+        case 1:
+            img = divKey1.getElementsByTagName("img")[0];
+            break;
+        case 2:
+            img = divKey2.getElementsByTagName("img")[0];
+            break;
+        case 3:
+            img = divKey3.getElementsByTagName("img")[0];
+            break;
+        case 4:
+            img = divKey4.getElementsByTagName("img")[0];
+            break;
+        case 5:
+            img = divKey5.getElementsByTagName("img")[0];
+            break;
+        case 6:
+            img = divKey6.getElementsByTagName("img")[0];
+            break;
+        case 7:
+            img = divKey7.getElementsByTagName("img")[0];
+            break;
+        case 8:
+            img = divKey8.getElementsByTagName("img")[0];
+            break;
+        case 9:
+            img = divKey9.getElementsByTagName("img")[0];
+            break;
+        case 10:
+            img = divKey10.getElementsByTagName("img")[0];
+            break;
+        case 11:
+            img = divKey11.getElementsByTagName("img")[0];
+            break;
+        case 12:
+            img = divKey12.getElementsByTagName("img")[0];
+            break;
+        case 13:
+            img = divKey13.getElementsByTagName("img")[0];
+            break;
+        case 14:
+            img = divKey14.getElementsByTagName("img")[0];
+            break;
+        default:
+            console.log("no matches");
+            break;
+    }
+    
+    if (img !== null)
+    {
+        img.className = "virtualdeck_image_border";
+    }
+}
+
+function VirtualDeck_ClearKeys()
+{
+    var img = "<img class='virtualdeck_image' src='fixtures/black.png' />";
+    
+    divKey0.innerHTML = img;
+    divKey1.innerHTML = img;
+    divKey2.innerHTML = img;
+    divKey3.innerHTML = img;
+    divKey4.innerHTML = img;
+    divKey5.innerHTML = img;
+    divKey6.innerHTML = img;
+    divKey7.innerHTML = img;
+    divKey8.innerHTML = img;
+    divKey9.innerHTML = img;
+    divKey10.innerHTML = img;
+    divKey11.innerHTML = img;
+    divKey12.innerHTML = img;
+    divKey13.innerHTML = img;
+    divKey14.innerHTML = img;
+}
+function VirtualDeck_CreateButton(keyIndex, name, image)
+{
+    var img = "<img class='virtualdeck_image' src='file://" + image + "' />";
+    
+    switch (keyIndex)
+    {
+        case 0:
+            divKey0.innerHTML = img;
+            break;
+        case 1:
+            divKey1.innerHTML = img;
+            break;
+        case 2:
+            divKey2.innerHTML = img;
+            break;
+        case 3:
+            divKey3.innerHTML = img;
+            break;
+        case 4:
+            divKey4.innerHTML = img;
+            break;
+        case 5:
+            divKey5.innerHTML = img;
+            break;
+        case 6:
+            divKey6.innerHTML = img;
+            break;
+        case 7:
+            divKey7.innerHTML = img;
+            break;
+        case 8:
+            divKey8.innerHTML = img;
+            break;
+        case 9:
+            divKey9.innerHTML = img;
+            break;
+        case 10:
+            divKey10.innerHTML = img;
+            break;
+        case 11:
+            divKey11.innerHTML = img;
+            break;
+        case 12:
+            divKey12.innerHTML = img;
+            break;
+        case 13:
+            divKey13.innerHTML = img;
+            break;
+        case 14:
+            divKey14.innerHTML = img;
+            break;
+        default:
+            console.log("no matches");
+            break;
+    }
+}
+
+function VirtualDeck_lockDeck()
+{
+    var lockedButtonText = '{"buttons":[{"buttonNumber": 7,"id": "lock","name": "Lock","image": "fixtures/lock.png"}]}';
+    var lockedButtonContent = JSON.parse(lockedButtonText);
+    currentButtonContent = lockedButtonContent;
+    
+    VirtualDeck_fillKeys(currentButtonContent);
+}
+
+function VirtualDeck_unlockDeck()
+{
+    currentButtonContent = jsonButtonContent;
+    
+    VirtualDeck_fillKeys(currentButtonContent);
+}
+
+</script>
+    </head>
+<body onLoad="onLoad();">
+ <div id="title-bar">
+      <div id="title-bar-btns">
+           <button id="btnClose">x</button>
+      </div>
+ </div>
+  <div class="virtualdeck_container">
+      <div class="virtualdeck_childcontainer">
+                <div style="clear:left;">
+                    <div class="virtualdeck_followstatediv">
+                        <input class="virtualdeck_followstatechk" type="checkbox" checked id="chkFollowState">
+                        <label for="chkFollowState">Follow Stream Deck</label>
+                    </div>
+                    <div class="virtualdeck_titlediv">VIRTUAL DECK</div>
+                </div>
+                <div style="clear:left;">
+                    <div class="virtualdeck_div" id="divKey4"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey3"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey2"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey1"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey0"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                </div>
+                <div style="clear:left;">
+                    <div class="virtualdeck_div" id="divKey9"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey8"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey7"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey6"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey5"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                </div>
+                <div style="clear:left;">
+                    <div class="virtualdeck_div" id="divKey14"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey13"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey12"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey11"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                    <div class="virtualdeck_div" id="divKey10"><img class='virtualdeck_image' src='fixtures/black.png' /></div>
+                </div>
+      </div>
+  </div>
+</body>
+</html>

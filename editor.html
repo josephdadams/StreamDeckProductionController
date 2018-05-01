@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Stream Deck Production Controller - Editor</title>
+            <link rel="stylesheet" href="css/checkbox.css">
+            <link rel="stylesheet" href="css/photon.min.css">
+          <style>
+              body
+              {
+                background-color: #eeeeee;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+              }
+              
+              .editordeck_container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+              }
+              
+              .editordeck_childcontainer {
+                    width: 410px;
+                    height: 200px;
+
+                    top: 50%;
+                    left: 50%;
+              }
+              
+              .editordeck_titlediv {
+                  width: 380px;
+                  height: 25px;
+                  padding: 5px;
+                  
+                  text-align:center;
+                  font-size:20px;
+                  font-family: "Arial", sans-serif;
+                  color:white;
+              }
+                            
+              .editordeck_div {
+                  width: 72px;
+                  height: 72px;
+                  padding: 10px;
+                  float:left;
+                  position: relative;
+                  text-align: center;
+                  color: white;
+              }
+              
+              .editordeck_div_highlighted {
+                  width: 72px;
+                  height: 72px;
+                  padding: 10px;
+                  float:left;
+                  position: relative;
+                  text-align: center;
+                  color: white;
+                  border: 5px solid #ffcc00;
+              }
+                           
+              .editordeck_image {
+                  border-radius: 15px;
+              }
+              
+                
+              @keyframes blink { 
+                50% { border-color: #ffcc00; } 
+              }
+              
+             .editordeck_image_highlighted {
+                 border: 55px solid #ffcc00;
+                 border-radius: 15px;
+            }
+            
+            .editordeck_image_centeredtext {
+                position: absolute;
+                top: 65%;
+                left: 65%;
+                transform: translate(-50%, -50%);
+                font-size:40px;
+                font-family: "Arial", sans-serif;
+                color:#222222;
+            }
+              
+#title-bar {
+ -webkit-app-region: drag;
+ height: 10px; 
+ padding: none;
+ margin: 0px; 
+}
+
+#title {
+ position: fixed;
+ top: 0px;
+ left: 6px; 
+}
+
+#title-bar-btns {
+ -webkit-app-region: no-drag;
+ position: fixed;
+ top: 0px;
+ right: 6px;
+}
+          </style>
+<script>
+    // TO DO:
+    /*
+     * create all button property fields
+     * fix deck padding
+     * add option to view/add sub buttons if it's a folder (save before going down)
+     * if it's a folder, delete the triggers assigned to it
+     * save/cancel buttons
+     * device drop down loads from jsonDeviceContent (show warning if no devices available)
+     * button to create unique id (or validate that it is unique and if not, make it unique)
+     * auto create back button at key index 4 when new folder created
+     * option to select image png file (suggest 72x72)
+     * simple background color chooser with display name text if preferred over button image (do this for every button state)
+     */
+    
+const ipc = require('electron').ipcRenderer;
+
+const remote = require('electron').remote;
+
+var divKey0, divKey1, divKey2, divKey3, divKey4, divKey5, divKey6, divKey7, divKey8, divKey9, divKey10, divKey11, divKey12, divKey13, divKey14;
+
+var jsonButtonContent = {};
+var currentButtonContent = {};
+var currentButtonObj = {};
+
+var tempButtonObj = null;
+
+var parentButtonContent = {};
+
+var jsonDeviceContent = {};
+
+var firstLoad = true;
+
+function onLoad()
+{
+    document.getElementById("btnClose").addEventListener("click", function (e) {
+        let window = remote.getCurrentWindow();
+        window.close();
+    });
+    
+    btnLoadButtonFile = document.getElementById('nav-loadbuttonfile');
+    btnLoadButtonFile.addEventListener('click', function (event) {ipc.send('EditorDeck-LoadButtonFile');});
+    
+    divKey0 = document.getElementById('divKey0');
+    divKey1 = document.getElementById('divKey1');
+    divKey2 = document.getElementById('divKey2');
+    divKey3 = document.getElementById('divKey3');
+    divKey4 = document.getElementById('divKey4');
+    divKey5 = document.getElementById('divKey5');
+    divKey6 = document.getElementById('divKey6');
+    divKey7 = document.getElementById('divKey7');
+    divKey8 = document.getElementById('divKey8');
+    divKey9 = document.getElementById('divKey9');
+    divKey10 = document.getElementById('divKey10');
+    divKey11 = document.getElementById('divKey11');
+    divKey12 = document.getElementById('divKey12');
+    divKey13 = document.getElementById('divKey13');
+    divKey14 = document.getElementById('divKey14');
+    
+    divKey0.addEventListener('click', function (e) {EditorDeck_singleClick(0);});
+    divKey1.addEventListener('click', function (e) {EditorDeck_singleClick(1);});
+    divKey2.addEventListener('click', function (e) {EditorDeck_singleClick(2);});
+    divKey3.addEventListener('click', function (e) {EditorDeck_singleClick(3);});
+    divKey4.addEventListener('click', function (e) {EditorDeck_singleClick(4);});
+    divKey5.addEventListener('click', function (e) {EditorDeck_singleClick(5);});
+    divKey6.addEventListener('click', function (e) {EditorDeck_singleClick(6);});
+    divKey7.addEventListener('click', function (e) {EditorDeck_singleClick(7);});
+    divKey8.addEventListener('click', function (e) {EditorDeck_singleClick(8);});
+    divKey9.addEventListener('click', function (e) {EditorDeck_singleClick(9);});
+    divKey10.addEventListener('click', function (e) {EditorDeck_singleClick(10);});
+    divKey11.addEventListener('click', function (e) {EditorDeck_singleClick(11);});
+    divKey12.addEventListener('click', function (e) {EditorDeck_singleClick(12);});
+    divKey13.addEventListener('click', function (e) {EditorDeck_singleClick(13);});
+    divKey14.addEventListener('click', function (e) {EditorDeck_singleClick(14);});
+    
+    divKey0.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(0);});
+    divKey1.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(1);});
+    divKey2.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(2);});
+    divKey3.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(3);});
+    divKey4.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(4);});
+    divKey5.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(5);});
+    divKey6.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(6);});
+    divKey7.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(7);});
+    divKey8.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(8);});
+    divKey9.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(9);});
+    divKey10.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(10);});
+    divKey11.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(11);});
+    divKey12.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(12);});
+    divKey13.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(13);});
+    divKey14.addEventListener('dblclick', function (e) {EditorDeck_doubleClick(14);});
+    
+    document.getElementById("btnButtonSave").addEventListener('click', function (e) {EditorDeck_saveButton();});
+    document.getElementById("btnButtonCancel").addEventListener('click', function (e) {EditorDeck_cancelButton();});
+    
+    ipc.on('EditorDeck-JsonButtonContent', function (event, buttonContent) {
+        jsonButtonContent = buttonContent;
+        if (firstLoad)
+        {
+            parentButtonContent = jsonButtonContent;
+            currentButtonContent = jsonButtonContent;
+            EditorDeck_fillKeys(currentButtonContent);
+            firstLoad = false;
+            
+            //var buttonGroups = EditorDeck_getButtonGroups(jsonButtonContent);
+        }
+    });
+    
+    ipc.on('EditorDeck-JsonDeviceContent', function (event, deviceContent) {
+        jsonDeviceContent = deviceContent;
+    });
+    
+    ipc.send('EditorDeck-LoadLastButtonFile');
+    ipc.send('EditorDeck-LoadDeviceFile'); //load up the devices
+}
+
+function EditorDeck_LoadFile(filePath)
+{
+    ipc.send('EditorDeck-LoadButtonFile', filePath); //asks for a dialog box, box returns JSON button content
+}
+
+function EditorDeck_doubleClick(keyIndex)
+{
+    var buttonObj = EditorDeck_findButtonByButtonNumber(keyIndex);
+    
+        if (buttonObj !== null)
+        {   
+            EditorDeck_getButtonParent(jsonButtonContent, buttonObj.id);
+            EditorDeck_getButtonParent(jsonButtonContent, parentButtonContent.id);
+
+            if (buttonObj.backButton) // if this was a back button, go up a folder
+            {
+                if (parentButtonContent === null) // if we are at the top level already
+                {
+                    // add code to go to a logo or something
+                }
+                else // load the parent level
+                {
+                    EditorDeck_fillKeys(parentButtonContent);
+                }
+            }
+            else // if not a "back" button, check if it's a folder
+            {       
+                if (buttonObj.buttons) // if this is a folder with items in it
+                {
+                    EditorDeck_fillKeys(buttonObj);
+                }
+                else // not a folder, so just show the button properties
+                {
+                    EditorDeck_loadButton(buttonObj);
+                }
+            }        
+        }
+        else
+        {
+            // couldn't find this button for some reason
+        }
+ }
+ 
+ function EditorDeck_singleClick(keyIndex)
+ {
+     EditorDeck_highlightButton(keyIndex);
+     
+    var buttonObj = EditorDeck_findButtonByButtonNumber(keyIndex);
+    
+    if (buttonObj !== null)
+    {
+        EditorDeck_loadButton(buttonObj);
+    }
+    else
+    {
+        //this is a new button, so just show the button properties with the key index selected
+        let tempButtonObj = {buttonNumber: keyIndex};
+        EditorDeck_loadButton(tempButtonObj);
+    }
+ }
+ 
+ function EditorDeck_highlightButton(keyIndex)
+ {
+     for (let i = 0; i <= 14; i++)
+     {
+         let divKey = document.getElementById("divKey" + i);
+         
+         if (i === keyIndex)
+         {
+             divKey.className = "editordeck_div_highlighted";
+         }
+         else
+         {
+             divKey.className = "editordeck_div";
+         }
+     }
+ }
+ 
+ function EditorDeck_getUniqueButtonID()
+ {
+    var buttonID = "button-";
+    
+    function generateUUID()
+    {
+        let d = new Date().getTime();
+        if(Date.now){
+            d = Date.now(); //high-precision timer
+        }
+        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            let r = (d + Math.random()*16)%16 | 0;
+            d = Math.floor(d/16);
+            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+        });
+        return uuid;
+    };
+    
+    buttonID += generateUUID();   
+    return buttonID;
+ }
+ 
+ function EditorDeck_updateButtonStructure(buttonObj)
+ {
+     //set id, buttonNumber (based on selectedKeyIndex), name, displayName, buttonStates, currentButtonStateID, deviceID, host, port, triggerType, buttonTriggers (which can contain deviceID, host, port, triggerType)
+     //save and cancel buttons at bottom
+         
+    tempButtonObj = {};
+     
+    tempButtonObj.buttonNumber = buttonObj.buttonNumber;
+     
+    if (buttonObj.id)
+    {
+        tempButtonObj.id = buttonObj.id;
+    }
+    else
+    {
+        tempButtonObj.id = EditorDeck_getUniqueButtonID();
+    }
+     
+    if (buttonObj.name)
+    {
+        tempButtonObj.name = buttonObj.name;
+    }
+    else
+    {
+        tempButtonObj.name = "";
+    }
+     
+    if (buttonObj.displayName)
+    {
+        tempButtonObj.displayName = buttonObj.displayName;
+    }
+    else
+    {
+        if (buttonObj.name)
+        {
+            tempButtonObj.displayName = buttonObj.name;
+        }
+        else
+        {
+            tempButtonObj.displayName = "";
+        }
+    }
+     
+    if (buttonObj.buttonStates)
+    {
+        // loop through sub array of button states)
+        let tempButtonStates = [];
+
+        for (let i = 0; i < buttonObj.buttonStates.length; i++)
+        {
+            let tempButtonStateObj = {};
+            tempButtonStateObj.buttonStateID = buttonObj.buttonStates[i].buttonStateID;
+            tempButtonStateObj.buttonImage = buttonObj.buttonStates[i].buttonImage;
+            tempButtonStates.push(tempButtonStateObj);
+        }
+
+        tempButtonObj.buttonStates = tempButtonStates;
+    }
+    else
+    {
+        // add the image to the button state array
+        let tempButtonStates = [];
+        let tempButtonStateObj = {};
+
+        if (buttonObj.image)
+        {
+            tempButtonStateObj.buttonStateID = "default";
+            tempButtonStateObj.buttonImage = buttonObj.image;
+        }
+        else
+        {
+            tempButtonStateObj.buttonStateID = "default";
+            tempButtonStateObj.buttonImage = "black.png";
+        }
+
+        tempButtonStates.push(tempButtonStateObj);
+        tempButtonObj.buttonStates = tempButtonStates;
+    }
+
+    if (buttonObj.currentButtonStateID)
+    {
+        tempButtonObj.currentButtonStateID = buttonObj.currentButtonStateID;
+    }
+    else
+    {
+        tempButtonObj.currentButtonStateID = "default";
+    }
+
+    if (buttonObj.buttonGroup)
+    {
+        tempButtonObj.buttonGroup = buttonObj.buttonGroup;
+    }
+     
+    if (buttonObj.backButton)
+    {
+        tempButtonObj.backButton = true;
+    }
+    else
+    {
+        tempButtonObj.backButton = false;
+    }
+    
+    if (buttonObj.buttons)  // we will refactor any sub buttons through recursion
+    {
+        let tempButtons = [];
+        
+        for (let i = 0; i < buttonObj.buttons.length; i++)
+        {
+            let tempButtonsButtonObj = {};
+            tempButtonsButtonObj = EditorDeck_updateButtonStructure(buttonObj.buttons[i]);
+            tempButtons.push(tempButtonsButtonObj);
+        }
+
+        tempButtonObj.buttons = tempButtons;
+    }
+    else
+    {
+        if (buttonObj.triggers)
+        {
+            // loop through sub array of triggers
+            let tempTriggers = [];
+                
+            for (let i = 0; i < buttonObj.triggers.length; i++)
+            {
+                let tempTriggerObj = {};
+
+                if (buttonObj.triggers[i].notify) // notification override option - "on" = always show, "off" = never show, "" = user default
+                {
+                    tempTriggerObj.notify = buttonObj.triggers[i].notify;
+                }
+                else if (buttonObj.notify)
+                {
+                    tempTriggerObj.notify = buttonObj.notify;
+                }
+
+                if (buttonObj.triggers[i].deviceID)
+                {
+                    tempTriggerObj.deviceID = buttonObj.triggers[i].deviceID;
+                }
+                else if (buttonObj.deviceID)
+                {
+                    tempTriggerObj.deviceID = buttonObj.deviceID;
+                }
+
+                if (buttonObj.triggers[i].host)
+                {
+                    tempTriggerObj.host = buttonObj.triggers[i].host;
+                }
+                else if (buttonObj.host)
+                {
+                    tempTriggerObj.host = buttonObj.host;
+                }
+
+                if (buttonObj.triggers[i].port)
+                {
+                    tempTriggerObj.port = buttonObj.triggers[i].port;
+                }
+                else if (buttonObj.port)
+                {
+                    tempTriggerObj.port = buttonObj.port;
+                }
+
+                if (buttonObj.triggers[i].triggerType)
+                {
+                    tempTriggerObj.triggerType = buttonObj.triggers[i].triggerType;
+                }
+                else if (buttonObj.triggerType)
+                {
+                    tempTriggerObj.triggerType = buttonObj.triggerType;
+                }
+
+                if (buttonObj.triggers[i].trigger)
+                {
+                    tempTriggerObj.trigger = buttonObj.triggers[i].trigger;
+                }
+
+                tempTriggers.push(tempTriggerObj);
+            }
+
+            tempButtonObj.triggers = tempTriggers;
+        }
+        else
+        {
+            let tempTriggers = [];
+            let tempTriggerObj = {};
+
+            if (buttonObj.notify)
+            {
+                tempTriggerObj.notify = buttonObj.notify;
+            }
+
+            if (buttonObj.deviceID)
+            {
+                tempTriggerObj.deviceID = buttonObj.deviceID;
+            }
+
+            if (buttonObj.host)
+            {
+                tempTriggerObj.host = buttonObj.host;
+            }
+
+            if (buttonObj.port)
+            {
+                tempTriggerObj.port = buttonObj.port;
+            }
+
+            if (buttonObj.triggerType)
+            {
+                tempTriggerObj.triggerType = buttonObj.triggerType;
+            }
+
+            if (buttonObj.trigger)
+            {
+                tempTriggerObj.trigger = buttonObj.trigger;
+                tempTriggers.push(tempTriggerObj);
+                tempButtonObj.triggers = tempTriggers;
+            }
+        }
+    }
+    
+    return tempButtonObj;
+ }
+ 
+ function EditorDeck_loadButton(buttonObj)
+ {
+    var updatedButtonObj = {};
+    updatedButtonObj = EditorDeck_updateButtonStructure(buttonObj);
+    
+    EditorDeck_showButtonProperties(updatedButtonObj);
+ }
+ 
+ function EditorDeck_showButtonProperties(buttonObj)
+ {
+     console.log(buttonObj);
+     //go through all the properties and bind them to the fields
+     //add listeners to the fields to auto update the button property
+ }
+ 
+ function EditorDeck_saveButton()
+ {
+    EditorDeck_getButtonParent(jsonButtonContent, currentButtonContent.id);
+    var parentButtonID = parentButtonContent.id;
+       
+    EditorDeck_saveButtonProperties(jsonButtonContent, tempButtonObj, parentButtonID);
+    
+    tempButtonObj = null;
+ }
+ 
+ function EditorDeck_saveButtonProperties(buttonContent, buttonObj, parentButtonID)
+ {
+     // find the button object of the parentButtonID
+     // look for buttonObj.id in parent obj's buttons
+     // if it exists, delete it
+     // push it to the array
+     
+    for (let i = 0; i < buttonContent.buttons.length; i++)
+    {
+        if (buttonContent.buttons[i].id === parentButtonID)
+        {
+            if (buttonContent.buttons[i].buttons)
+            {
+                // it should have sub buttons, but always good to make sure
+                for (let j = 0; j < buttonContent.buttons[i].buttons.length; j++)
+                {
+                    if (buttonContent.buttons[i].buttons[j].id === buttonObj.id)
+                    {
+                        delete buttonContent.buttons[i].buttons[j];
+                        buttonContent.buttons[i].buttons.push(buttonObj);
+                    }
+                }
+            }
+        }
+        else if (buttonContent.buttons[i].buttons)
+        {
+            EditorDeck_saveButtonProperties(buttonContent.buttons[i], buttonObj, parentButtonID);
+        }
+    }
+ } 
+ 
+ function EditorDeck_findButtonByButtonNumber(buttonNumber)
+{
+    var found = false;
+    var buttonObj = {};
+    
+    for (let i = 0; i < currentButtonContent.buttons.length; i++)
+    {
+        if (currentButtonContent.buttons[i].buttonNumber === buttonNumber)
+        {
+            found = true;
+            buttonObj = currentButtonContent.buttons[i];
+        }
+    }
+    
+    if (!found)
+    {
+        buttonObj = null;
+    }
+    
+    return buttonObj;
+}
+ 
+function EditorDeck_findButtonContent(buttonContent, buttonID)
+{   
+    for (let i = 0; i < buttonContent.buttons.length; i++)
+    {
+        if (buttonContent.buttons[i].id === buttonID)
+        {
+            currentButtonContent = buttonContent;
+        }
+        else if (buttonContent.buttons[i].buttons)
+        {
+            EditorDeck_findButtonContent(buttonContent.buttons[i], buttonID);
+        }
+    }
+}
+
+function EditorDeck_getButtonParent(buttonContent, buttonID)
+{
+    parentButtonContent = null;
+    
+    for (let i = 0; i < buttonContent.buttons.length; i++)
+    {
+        if (buttonContent.buttons[i].id === buttonID)
+        {
+            parentButtonContent = buttonContent;
+        }
+        else if (buttonContent.buttons[i].buttons)
+        {
+            EditorDeck_getButtonParent(buttonContent.buttons[i], buttonID);
+        }
+    }
+    
+    if (parentButtonContent === null)
+    {
+        parentButtonContent = jsonButtonContent;
+    }
+}
+
+function EditorDeck_getButtonGroups(buttonContent)
+{
+    var tempButtonGroups = [];
+    
+    function findButtonGroup(buttonContent)
+    {   
+        for (let i = 0; i < buttonContent.buttons.length; i++)
+        {
+            if (buttonContent.buttons[i].buttonGroup)
+            {
+                //add it to the array
+                if (tempButtonGroups.indexOf(buttonContent.buttons[i].buttonGroup)===-1)
+                {
+                    tempButtonGroups.push(buttonContent.buttons[i].buttonGroup);
+                }
+            }
+            else if (buttonContent.buttons[i].buttons)
+            {
+                findButtonGroup(buttonContent.buttons[i]);
+            }
+        }
+    }
+    
+    findButtonGroup(buttonContent);    
+    return tempButtonGroups;
+}
+
+function EditorDeck_fillKeys(buttonContent)
+{
+        //loop through returned Button Obj to build editor deck
+        EditorDeck_ClearKeys();
+        
+        for (let i=0; i < buttonContent.buttons.length; i++)
+        {
+            if (buttonContent.buttons[i].buttonStates) // if the button supports multiple states, load the current state of the button
+            {
+                let buttonImage = buttonContent.buttons[i].buttonStates[0].buttonImage; // load the first button state if currentButtonStateID is not valid
+
+                if (buttonContent.buttons[i].currentButtonStateID)
+                {                
+                    for (let j=0; j < buttonContent.buttons[i].buttonStates.length; j++)
+                    {
+                        if (buttonContent.buttons[i].buttonStates[j].buttonStateID===buttonContent.buttons[i].currentButtonStateID)
+                        {
+                            buttonImage = buttonContent.buttons[i].buttonStates[j].buttonImage;
+                        }
+                    }
+                }
+                EditorDeck_CreateButton(buttonContent.buttons[i].buttonNumber, buttonContent.buttons[i].name, buttonImage);
+            }
+            else // load using the regular image property
+            {
+                EditorDeck_CreateButton(buttonContent.buttons[i].buttonNumber, buttonContent.buttons[i].name, buttonContent.buttons[i].image);
+            }
+        }
+        
+        currentButtonContent = buttonContent;
+}
+
+function EditorDeck_ClearKeys()
+{
+    for (let i = 0; i <= 14; i++)
+    {
+        let img = "<img class='editordeck_image' src='fixtures/black.png' />";
+        img += "<div class='editordeck_image_centeredtext'>" + i + "</div>";
+        
+        document.getElementById("divKey" + i).innerHTML = img;
+    }
+}
+function EditorDeck_CreateButton(keyIndex, name, image)
+{
+    var img = "<img class='editordeck_image' src='file://" + image + "' />";
+    
+    switch (keyIndex)
+    {
+        case 0:
+            divKey0.innerHTML = img;
+            break;
+        case 1:
+            divKey1.innerHTML = img;
+            break;
+        case 2:
+            divKey2.innerHTML = img;
+            break;
+        case 3:
+            divKey3.innerHTML = img;
+            break;
+        case 4:
+            divKey4.innerHTML = img;
+            break;
+        case 5:
+            divKey5.innerHTML = img;
+            break;
+        case 6:
+            divKey6.innerHTML = img;
+            break;
+        case 7:
+            divKey7.innerHTML = img;
+            break;
+        case 8:
+            divKey8.innerHTML = img;
+            break;
+        case 9:
+            divKey9.innerHTML = img;
+            break;
+        case 10:
+            divKey10.innerHTML = img;
+            break;
+        case 11:
+            divKey11.innerHTML = img;
+            break;
+        case 12:
+            divKey12.innerHTML = img;
+            break;
+        case 13:
+            divKey13.innerHTML = img;
+            break;
+        case 14:
+            divKey14.innerHTML = img;
+            break;
+        default:
+            console.log("no matches");
+            break;
+    }
+}
+</script>
+    </head>
+<body onLoad="onLoad();">
+    <div class="window">
+ <div id="title-bar">
+      <div id="title-bar-btns">
+           <button id="btnClose">x</button>
+      </div>
+ </div>
+      <div class="window-content">
+        <div class="pane-group">
+<div class="pane pane-sm sidebar">
+            <nav class="nav-group">
+              <h5 class="nav-group-title">Favorites</h5>
+              <span class="nav-group-item active" id="nav-loadbuttonfile">
+                <span class="icon icon-home"></span>
+                Load Button File
+              </span>
+              <span class="nav-group-item" id="nav-help-buttons">
+                <span class="icon icon-light-up"></span>
+                Save Button File
+              </span>
+            </nav>
+</div>
+          <div class="pane" id="editor-home">
+  <div class="editordeck_container">
+      <div class="editordeck_childcontainer">
+                <div style="clear:left;">
+                    <div class="editordeck_titlediv">EDITOR</div>
+                </div>
+                <div style="clear:left;">
+                    <div class="editordeck_div" id="divKey4"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey3"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey2"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey1"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey0"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                </div>
+                <div style="clear:left;">
+                    <div class="editordeck_div" id="divKey9"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey8"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey7"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey6"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey5"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                </div>
+                <div style="clear:left;">
+                    <div class="editordeck_div" id="divKey14"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey13"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey12"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey11"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                    <div class="editordeck_div" id="divKey10"><img class='editordeck_image' src='fixtures/black.png' /></div>
+                </div>
+      </div>
+  </div>
+                        </div>
+          <div class="pane pane-sm sidebar" style="width:300px;">
+              <b>Button Properties:</b><br />
+              <label for="inputButtonNumber">Button ID:</label>
+              <input type="text" id="inputButtonNumber" size="15"/>
+              <label for="inputButtonID">Button ID:</label>
+              <input type="text" id="inputButtonID" size="15"/>
+              <br />
+              <label for="inputButtonName">Button Name:</label>
+              <input type="text" id="inputButtonName" size="25"/>
+              <br />
+              <label for="inputButtonDisplayName">Button Display Name:</label>
+              <input type="text" id="inputButtonDisplayName" size="15"/>
+              <br />
+              <label for="selButtonType">Button Type:</label>
+              Back Button, Folder, Regular Button<br />
+              (auto change to back button image if chosen)<br />
+              <label for="tblButtonStates">Button States</label>
+              table of button states to add, first one should always be called "default"
+              <br />Provide a dropdown list of "default", "toggle", "custom" (that shows an input field, simplify what they type in, remove quotes, spaces, etc.)<br />
+              provide an image selection box, put the image into the deck once loaded
+              <br />
+              Dropdownlist of button states so user can pick "current button state id"
+              <label for="selButtonGroup">Button Group</label>
+              blank by default, with select list of button groups available, last being "custom" where they can add a new one (simplify what they type in)
+              <br />
+              Triggers:<br />
+              Drop down list of devices, which determines trigger type, host, port, etc.<br />
+              Drop down list of trigger type, which determines trigger message options<br />
+              Include help/examples<br/>
+              Allow sorting/re-ordering              
+              <button id="btnButtonSave">Save</button>
+              <button id="btnButtonCancel">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

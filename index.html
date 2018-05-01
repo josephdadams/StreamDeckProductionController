@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Stream Deck Production Control</title>
+          <link rel="stylesheet" href="css/photon.min.css">
+    </head>
+ <script>
+const ipc = require('electron').ipcRenderer;
+
+var btnOpenFileDialog_ButtonStructure;
+var btnOpenFileDialog_DeviceStructure;
+
+var btnRestartStreamDeck;
+
+var btnLaunchVirtualDeck;
+    
+function onLoad()
+{
+    btnOpenFileDialog_ButtonStructure = document.getElementById('btnOpenFileDialog_ButtonStructure');
+    btnOpenFileDialog_DeviceStructure = document.getElementById('btnOpenFileDialog_DeviceStructure');
+    
+    btnRestartStreamDeck = document.getElementById('btnRestartStreamDeck');
+    btnRestartStreamDeck.style.display = "none";
+    
+    btnLaunchVirtualDeck = document.getElementById('btnLaunchVirtualDeck');
+    btnLaunchVirtualDeck.addEventListener('click', function (event) {
+       ipc.send("LaunchVirtualDeck"); 
+    });
+    
+    
+    btnOpenFileDialog_ButtonStructure.addEventListener('click', function (event) {
+  ipc.send('FileDialogOpen-ButtonStructure');
+    });
+    
+    btnOpenFileDialog_DeviceStructure.addEventListener('click', function (event) {
+  ipc.send('FileDialogOpen-DeviceStructure');
+    });
+    
+    btnRestartStreamDeck.addEventListener('click', function (event) {
+       ipc.send("StreamDeck-Restart"); 
+    });
+
+    ipc.on('FileSelected-ButtonStructure', function (event, path) {
+        document.getElementById('spanFileSelected_ButtonStructure').innerHTML = path;
+    });
+    
+    ipc.on('FileSelected-DeviceStructure', function (event, path) {
+        document.getElementById('spanFileSelected_DeviceStructure').innerHTML = path;
+    });
+    
+    ipc.on("StreamDeck-OfferRestart", function (event, msg) {
+        switch (msg)
+        {
+            case "NewButtonFile":
+                btnRestartStreamDeck.style.display = "block";
+                break;
+            case "NewDeviceFile":
+                btnRestartStreamDeck.style.display = "block";
+                break;
+            default:
+                break;
+        }
+    });
+
+    ipc.send('LoadStore-ButtonStructureFile');
+    ipc.send('LoadStore-DeviceStructureFile');
+}
+    </script>
+    <body onLoad="onLoad();">
+<div class="window">
+
+      <!-- Your app's content goes inside .window-content -->
+      <div class="window-content">
+        <div class="pane-group">
+          <div class="pane">      
+      <div>
+      <button class="demo-button" id="btnOpenFileDialog_ButtonStructure">Select Button Structure File</button>
+      <span class="demo-response" id="spanFileSelected_ButtonStructure"></span>
+      </div>
+              <div></div>
+      <div>
+      <button class="demo-button" id="btnOpenFileDialog_DeviceStructure">Select Device Structure File</button>
+      <span class="demo-response" id="spanFileSelected_DeviceStructure"></span>
+      </div>
+              <div><button class="demo-button" id="btnRestartStreamDeck">Restart Stream Deck with new Files</button></div>
+              
+              <div><button class="demo-button" id="btnLaunchVirtualDeck">Launch Virtual Deck</button></div>
+        </div>
+      </div>
+    </div>
+    </body>
+  </html>
